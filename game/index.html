@@ -8,33 +8,38 @@
 { "imports": { "three": "./vendor/three.module.min.js" } }
 </script>
 <style>
-  html, body { margin: 0; height: 100%; overflow: hidden; background: #0a1420; font-family: 'Segoe UI', Arial, sans-serif; }
+  /* Base: full-screen canvas, no scrollbars, dark backdrop behind the 3D view. */
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #081222; font-family: Verdana, 'Trebuchet MS', sans-serif; }
   #game { position: fixed; inset: 0; }
   #game canvas { display: block; }
-  .screen { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; text-align: center; z-index: 20; background: linear-gradient(160deg, rgba(10,30,60,0.88), rgba(255,120,40,0.55)); }
-  .screen h1 { font-size: 84px; margin: 0; letter-spacing: 6px; color: #ffd23f; text-shadow: 0 4px 0 #c0392b, 0 8px 24px rgba(0,0,0,0.7); font-style: italic; }
-  .screen h2 { font-size: 22px; font-weight: 400; margin: 8px 0 4px; color: #eaf6ff; }
-  .screen p { max-width: 640px; font-size: 16px; line-height: 1.5; color: #dfeefc; }
-  .screen button { margin: 10px 6px 0; padding: 14px 34px; font-size: 18px; font-weight: 700; border: none; border-radius: 8px; cursor: pointer; background: #ffd23f; color: #1a1a1a; }
-  .screen button.secondary { background: rgba(255,255,255,0.2); color: #fff; border: 2px solid #fff; }
-  .screen .tag { margin-top: 18px; font-size: 13px; color: #bcd8ee; }
-  #hud { position: fixed; inset: 0; pointer-events: none; display: none; z-index: 10; color: #fff; }
-  #hud-top { position: absolute; top: 14px; right: 16px; display: flex; gap: 18px; align-items: center; font-size: 26px; font-weight: 800; text-shadow: 0 2px 6px #000; }
-  #hud-clock { font-size: 20px; font-weight: 600; }
-  #hud-stars .star { color: rgba(255,255,255,0.35); font-size: 26px; }
-  #hud-stars .star.on { color: #ffd23f; text-shadow: 0 0 8px #ff8800; }
-  #hud-mission { position: absolute; top: 14px; left: 16px; background: rgba(0,0,0,0.55); padding: 10px 14px; border-left: 5px solid #00e5ff; border-radius: 4px; max-width: 420px; }
-  #hud-mission-title { font-weight: 800; font-size: 15px; letter-spacing: 1px; }
-  #hud-mission-obj { font-size: 14px; color: #cfeeff; margin-top: 3px; }
-  #hud-toast { position: absolute; top: 110px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.65); padding: 10px 18px; border-radius: 6px; font-size: 16px; max-width: 640px; text-align: center; }
-  #hud-bottom { position: absolute; bottom: 56px; left: 16px; display: flex; gap: 22px; align-items: center; font-size: 17px; font-weight: 700; text-shadow: 0 2px 6px #000; }
-  #hud-health .bar { display: inline-block; width: 140px; height: 12px; background: rgba(0,0,0,0.6); border-radius: 6px; overflow: hidden; vertical-align: middle; }
-  #hud-health .fill { display: block; height: 100%; background: #2ecc71; }
-  #minimap { position: absolute; bottom: 16px; right: 16px; border-radius: 6px; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); }
-  #hud-cross { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); font-size: 28px; color: #fff; text-shadow: 0 0 6px #000; }
-  #hud-controls { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); font-size: 12px; color: rgba(255,255,255,0.85); background: rgba(0,0,0,0.45); padding: 6px 10px; border-radius: 4px; white-space: nowrap; }
+
+  /* Full-screen overlays: title, pause, wasted/busted. */
+  .screen { position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #fff; background: linear-gradient(200deg, rgba(6,24,52,0.92) 0%, rgba(255,110,40,0.45) 100%); }
+  .screen h1 { margin: 0; font-size: 84px; font-style: italic; letter-spacing: 6px; color: #ffd23f; text-shadow: 0 4px 0 #c0392b, 0 12px 28px rgba(0,0,0,0.8); }
+  .screen h2 { margin: 12px 0 6px; font-size: 20px; font-weight: 400; color: #eaf6ff; }
+  .screen p { max-width: 640px; margin: 8px 0; font-size: 16px; line-height: 1.6; color: #dfeefc; }
+  .screen button { margin: 14px 6px 0; padding: 14px 34px; font-size: 18px; font-weight: 700; color: #1a1a1a; background: #ffd23f; border: none; border-radius: 9px; cursor: pointer; box-shadow: 0 4px 0 #b8860b; }
+  .screen button.secondary { color: #fff; background: rgba(255,255,255,0.16); border: 2px solid #fff; box-shadow: none; }
+  .screen .tag { margin-top: 22px; font-size: 13px; line-height: 1.7; color: #bcd8ee; }
   #end-screen, #pause-screen { display: none; }
-  #end-title { font-size: 96px; color: #ff4444; }
+  #end-title { font-size: 92px; color: #ff4444; }
+
+  /* In-game HUD: pointer-events off so clicks reach the canvas. */
+  #hud { position: fixed; inset: 0; z-index: 10; display: none; color: #fff; pointer-events: none; }
+  #hud-top { position: absolute; top: 14px; right: 16px; display: flex; align-items: center; gap: 18px; font-size: 26px; font-weight: 800; text-shadow: 0 2px 6px #000; }
+  #hud-clock { font-size: 20px; font-weight: 600; }
+  #hud-stars .star { font-size: 26px; color: rgba(255,255,255,0.35); }
+  #hud-stars .star.on { color: #ffd23f; text-shadow: 0 0 8px #ff8800; }
+  #hud-mission { position: absolute; top: 14px; left: 16px; max-width: 430px; padding: 10px 14px; background: rgba(0,0,0,0.55); border-left: 5px solid #00e5ff; border-radius: 4px; }
+  #hud-mission-title { font-size: 15px; font-weight: 800; letter-spacing: 1px; }
+  #hud-mission-obj { margin-top: 3px; font-size: 14px; color: #cfeeff; }
+  #hud-toast { position: absolute; top: 112px; left: 50%; transform: translateX(-50%); max-width: 660px; padding: 10px 18px; background: rgba(0,0,0,0.65); border-radius: 6px; font-size: 16px; text-align: center; }
+  #hud-bottom { position: absolute; bottom: 56px; left: 16px; display: flex; align-items: center; gap: 22px; font-size: 17px; font-weight: 700; text-shadow: 0 2px 6px #000; }
+  #hud-health .bar { display: inline-block; width: 140px; height: 12px; overflow: hidden; vertical-align: middle; background: rgba(0,0,0,0.6); border-radius: 6px; }
+  #hud-health .fill { display: block; height: 100%; background: #2ecc71; }
+  #minimap { position: absolute; right: 16px; bottom: 16px; border-radius: 6px; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); }
+  #hud-cross { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); font-size: 28px; color: #fff; text-shadow: 0 0 6px #000; }
+  #hud-controls { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); padding: 6px 10px; font-size: 12px; color: rgba(255,255,255,0.85); background: rgba(0,0,0,0.45); border-radius: 4px; white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -42,13 +47,13 @@
 <div id="hud"></div>
 <div id="title-screen" class="screen">
   <h1>SOLMAR BAY</h1>
-  <h2>An original open-world crime story — sun, sea, and the Commodore's harbour.</h2>
-  <p>You are <b>Leo Marin</b>, a wheelman fresh off the docks. Fixer <b>Mara Solis</b> has five jobs for you — steal cars, outrun the police, and take down the Commodore's crew. Explore the city on foot or by car, take taxi fares, race the beachfront, and build your fortune.</p>
+  <h2>An original open-world crime story on a sun-soaked coast.</h2>
+  <p>You are <b>Leo Marin</b>, a wheelman new to the docks. The fixer <b>Mara Solis</b> has five jobs lined up for you, and the harbour boss they call the <b>Commodore</b> wants you gone. Steal cars, dodge the police, fight his crew at the docks — and take the city for yourself.</p>
   <div>
     <button id="btn-new">NEW GAME</button>
     <button id="btn-continue" class="secondary">CONTINUE</button>
   </div>
-  <p class="tag">WASD move &amp; drive · Mouse drag camera · Click shoot · E enter / exit car · Shift run · Space handbrake · T taxi · R race · P pause · M mute · 10 hidden packages pay $50 each<br>An original game — no Rockstar content. Sound is synthesised live plus a Solmar radio loop; no downloads.</p>
+  <p class="tag">WASD move &amp; drive · Drag mouse for camera · Click to shoot · E enter / exit car · Shift run · Space handbrake · T taxi fare · R beach race · P pause · M mute · H hide HUD<br>10 hidden packages around the city pay $50 each. An original game — no Rockstar content. Sound is synthesised live, plus a Solmar radio loop; nothing is downloaded.</p>
 </div>
 <div id="pause-screen" class="screen">
   <h1 style="font-size:56px">PAUSED</h1>
