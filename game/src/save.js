@@ -1,26 +1,47 @@
-// Save / load to localStorage: position, money, health, mission progress,
-// wanted level, unlocked cars and the clock. One slot, autosaves on mission
-// completion and every 20 seconds of play.
-const KEY = 'solmar-bay-save-v1';
-export function saveGame(state) {
+// Save / load through localStorage: cash, health, story progress, the
+// clock, side-job tallies and the hidden parcels already found. One slot;
+// the game autosaves every 20 seconds and whenever a mission closes.
+const SLOT = 'solmar-bay-save-v1';
+
+export function saveRun(run) {
   try {
-    const data = {
-      money: state.money, health: state.health, missionIndex: state.missionIndex,
-      completedMissions: state.completedMissions, wanted: state.wanted,
-      hour: state.hour, taxiFares: state.taxiFares, racesWon: state.racesWon,
-      packages: state.packagesTaken || [],
-      playerX: state.player.x, playerZ: state.player.z, playerAngle: state.player.angle,
-      savedAt: Date.now(),
+    const snap = {
+      cash: run.money,
+      hp: run.hp,
+      chapter: run.missionIndex,
+      done: run.done,
+      heat: run.wanted,
+      clock: run.hour,
+      fares: run.fares,
+      trials: run.trials,
+      parcels: run.parcelsFound || [],
+      px: run.player.x,
+      pz: run.player.z,
+      face: run.player.face,
+      when: Date.now(),
     };
-    window.localStorage.setItem(KEY, JSON.stringify(data));
+    window.localStorage.setItem(SLOT, JSON.stringify(snap));
     return true;
-  } catch (e) { return false; }
+  } catch (e) {
+    return false;
+  }
 }
-export function loadGame() {
+
+export function loadRun() {
   try {
-    const raw = window.localStorage.getItem(KEY);
+    const raw = window.localStorage.getItem(SLOT);
     return raw ? JSON.parse(raw) : null;
-  } catch (e) { return null; }
+  } catch (e) {
+    return null;
+  }
 }
-export function hasSave() { return loadGame() !== null; }
-export function clearSave() { try { window.localStorage.removeItem(KEY); } catch (e) {} }
+
+export function hasSave() {
+  return loadRun() !== null;
+}
+
+export function clearSave() {
+  try {
+    window.localStorage.removeItem(SLOT);
+  } catch (e) {}
+}
