@@ -1,74 +1,125 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Solmar Bay — Open-World Crime Game</title>
-<script type="importmap">
-{ "imports": { "three": "./vendor/three.module.min.js" } }
-</script>
-<style>
-  /* Base: full-screen canvas, no scrollbars, dark backdrop behind the 3D view. */
-  html, body { margin: 0; height: 100%; overflow: hidden; background: #081222; font-family: Verdana, 'Trebuchet MS', sans-serif; }
-  #game { position: fixed; inset: 0; }
-  #game canvas { display: block; }
-
-  /* Full-screen overlays: title, pause, wasted/busted. */
-  .screen { position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #fff; background: linear-gradient(200deg, rgba(6,24,52,0.92) 0%, rgba(255,110,40,0.45) 100%); }
-  .screen h1 { margin: 0; font-size: 84px; font-style: italic; letter-spacing: 6px; color: #ffd23f; text-shadow: 0 4px 0 #c0392b, 0 12px 28px rgba(0,0,0,0.8); }
-  .screen h2 { margin: 12px 0 6px; font-size: 20px; font-weight: 400; color: #eaf6ff; }
-  .screen p { max-width: 640px; margin: 8px 0; font-size: 16px; line-height: 1.6; color: #dfeefc; }
-  .screen button { margin: 14px 6px 0; padding: 14px 34px; font-size: 18px; font-weight: 700; color: #1a1a1a; background: #ffd23f; border: none; border-radius: 9px; cursor: pointer; box-shadow: 0 4px 0 #b8860b; }
-  .screen button.secondary { color: #fff; background: rgba(255,255,255,0.16); border: 2px solid #fff; box-shadow: none; }
-  .screen .tag { margin-top: 22px; font-size: 13px; line-height: 1.7; color: #bcd8ee; }
-  #end-screen, #pause-screen { display: none; }
-  #end-title { font-size: 92px; color: #ff4444; }
-
-  /* In-game HUD: pointer-events off so clicks reach the canvas. */
-  #hud { position: fixed; inset: 0; z-index: 10; display: none; color: #fff; pointer-events: none; }
-  #hud-top { position: absolute; top: 14px; right: 16px; display: flex; align-items: center; gap: 18px; font-size: 26px; font-weight: 800; text-shadow: 0 2px 6px #000; }
-  #hud-clock { font-size: 20px; font-weight: 600; }
-  #hud-stars .star { font-size: 26px; color: rgba(255,255,255,0.35); }
-  #hud-stars .star.on { color: #ffd23f; text-shadow: 0 0 8px #ff8800; }
-  #hud-mission { position: absolute; top: 14px; left: 16px; max-width: 430px; padding: 10px 14px; background: rgba(0,0,0,0.55); border-left: 5px solid #00e5ff; border-radius: 4px; }
-  #hud-mission-title { font-size: 15px; font-weight: 800; letter-spacing: 1px; }
-  #hud-mission-obj { margin-top: 3px; font-size: 14px; color: #cfeeff; }
-  #hud-toast { position: absolute; top: 112px; left: 50%; transform: translateX(-50%); max-width: 660px; padding: 10px 18px; background: rgba(0,0,0,0.65); border-radius: 6px; font-size: 16px; text-align: center; }
-  #hud-bottom { position: absolute; bottom: 56px; left: 16px; display: flex; align-items: center; gap: 22px; font-size: 17px; font-weight: 700; text-shadow: 0 2px 6px #000; }
-  #hud-health .bar { display: inline-block; width: 140px; height: 12px; overflow: hidden; vertical-align: middle; background: rgba(0,0,0,0.6); border-radius: 6px; }
-  #hud-health .fill { display: block; height: 100%; background: #2ecc71; }
-  #minimap { position: absolute; right: 16px; bottom: 16px; border-radius: 6px; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); }
-  #hud-cross { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); font-size: 28px; color: #fff; text-shadow: 0 0 6px #000; }
-  #hud-controls { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); padding: 6px 10px; font-size: 12px; color: rgba(255,255,255,0.85); background: rgba(0,0,0,0.45); border-radius: 4px; white-space: nowrap; }
-</style>
+<title>Solmar Bay — Open World Drive</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="game"></div>
-<div id="hud"></div>
-<div id="title-screen" class="screen">
-  <h1>SOLMAR BAY</h1>
-  <h2>An original open-world crime story on a sun-soaked coast.</h2>
-  <p>You are <b>Leo Marin</b>, a wheelman new to the docks. The fixer <b>Mara Solis</b> has five jobs lined up for you, and the harbour boss they call the <b>Commodore</b> wants you gone. Steal cars, dodge the police, fight his crew at the docks — and take the city for yourself.</p>
-  <div>
-    <button id="btn-new">NEW GAME</button>
-    <button id="btn-continue" class="secondary">CONTINUE</button>
+<div id="stage">
+  <canvas id="game" width="1280" height="720"></canvas>
+
+  <!-- Heads-up display, shown while driving or paused -->
+  <div id="hud" class="hidden">
+    <div id="hud-left">
+      <div id="cash">$0</div>
+      <div id="stars" aria-label="wanted level"></div>
+      <div id="objective"></div>
+      <div id="mission-timer"></div>
+    </div>
+    <div id="hud-right">
+      <canvas id="minimap" width="190" height="156"></canvas>
+      <div id="minimap-label">SOLMAR BAY</div>
+    </div>
+    <div id="hud-bottom">
+      <div id="speed"><span id="speed-num">0</span><span id="speed-unit">mph</span></div>
+      <div id="gear">PARK</div>
+      <div id="hint"></div>
+    </div>
+    <div id="toast"></div>
+    <div id="beacon-arrow">▲</div>
   </div>
-  <p class="tag">WASD move &amp; drive · Drag mouse for camera · Click to shoot · E enter / exit car · Shift run · Space handbrake · T taxi fare · R beach race · P pause · M mute · H hide HUD<br>10 hidden packages around the city pay $50 each. An original game — no Rockstar content. Sound is synthesised live, plus a Solmar radio loop; nothing is downloaded.</p>
-</div>
-<div id="pause-screen" class="screen">
-  <h1 style="font-size:56px">PAUSED</h1>
-  <p>Solmar Bay waits for no one — except right now.</p>
-  <p id="pause-stats"></p>
-  <button id="btn-resume">RESUME</button>
-</div>
-<div id="end-screen" class="screen">
-  <h1 id="end-title">WASTED</h1>
-  <p id="end-sub"></p>
-  <div>
-    <button id="btn-resume2">KEEP PLAYING</button>
-    <button id="btn-restart" class="secondary">RESTART STORY</button>
+
+  <!-- Title screen -->
+  <div id="title" class="overlay">
+    <div class="panel title-panel">
+      <div class="logo-sub">WELCOME TO</div>
+      <h1 class="logo">SOLMAR<span> BAY</span></h1>
+      <p class="tagline">Sun, sea, and a city that never stops moving. Drive it, steal it, own it.</p>
+      <div class="menu">
+        <button id="btn-new" class="menu-btn primary">NEW GAME</button>
+        <button id="btn-continue" class="menu-btn">CONTINUE</button>
+        <button id="btn-missions" class="menu-btn">MISSIONS</button>
+        <button id="btn-how" class="menu-btn">HOW TO PLAY</button>
+      </div>
+      <p class="foot">Rio is new in town. Marisol has work for him — if he can drive.<br>
+      An original open-world game. No network, no account, just the city.</p>
+    </div>
+  </div>
+
+  <!-- Mission select -->
+  <div id="missions" class="overlay hidden">
+    <div class="panel">
+      <h2>MISSIONS</h2>
+      <div id="mission-list"></div>
+      <button id="btn-missions-back" class="menu-btn">BACK</button>
+    </div>
+  </div>
+
+  <!-- How to play -->
+  <div id="howto" class="overlay hidden">
+    <div class="panel">
+      <h2>HOW TO PLAY</h2>
+      <dl class="keys">
+        <div><dt>W / ↑</dt><dd>Accelerate</dd></div>
+        <div><dt>S / ↓</dt><dd>Brake / reverse</dd></div>
+        <div><dt>A D / ← →</dt><dd>Steer</dd></div>
+        <div><dt>E</dt><dd>Enter / exit car — steal a parked or traffic car</dd></div>
+        <div><dt>F</dt><dd>Punch (on foot)</dd></div>
+        <div><dt>Space</dt><dd>Honk</dd></div>
+        <div><dt>P / Esc</dt><dd>Pause</dd></div>
+        <div><dt>M</dt><dd>Mute</dd></div>
+      </dl>
+      <p class="rules">Stars mean the police want you. Hard crashes and hitting people raise your wanted level.
+      Get BUSTED and you pay a $150 fine and wake up at the garage. Finish missions to earn cash and
+      unlock the next job. Your progress saves automatically.</p>
+      <button id="btn-how-back" class="menu-btn">BACK</button>
+    </div>
+  </div>
+
+  <!-- Mission briefing -->
+  <div id="briefing" class="overlay hidden">
+    <div class="panel">
+      <div id="brief-mission-no" class="brief-no">MISSION 1</div>
+      <h2 id="brief-title"></h2>
+      <p id="brief-text"></p>
+      <p id="brief-pay" class="pay"></p>
+      <button id="btn-start-mission" class="menu-btn primary">START</button>
+    </div>
+  </div>
+
+  <!-- Pause menu -->
+  <div id="paused" class="overlay hidden">
+    <div class="panel">
+      <h2>PAUSED</h2>
+      <p id="pause-stats"></p>
+      <button id="btn-resume" class="menu-btn primary">RESUME</button>
+      <button id="btn-quit-title" class="menu-btn">QUIT TO TITLE</button>
+    </div>
+  </div>
+
+  <!-- Mission result -->
+  <div id="result" class="overlay hidden">
+    <div class="panel">
+      <div id="result-head" class="brief-no">MISSION COMPLETE</div>
+      <h2 id="result-title"></h2>
+      <p id="result-text"></p>
+      <button id="btn-result-next" class="menu-btn primary">CONTINUE</button>
+    </div>
+  </div>
+
+  <!-- Busted flash -->
+  <div id="busted" class="overlay hidden">
+    <div class="panel busted-panel">
+      <h2>BUSTED</h2>
+      <p>The Solmar Bay PD caught up with you.</p>
+      <p id="busted-fine" class="pay"></p>
+      <button id="btn-busted-ok" class="menu-btn primary">BACK TO THE GARAGE</button>
+    </div>
   </div>
 </div>
-<script type="module" src="./src/main.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/game.js"></script>
 </body>
 </html>

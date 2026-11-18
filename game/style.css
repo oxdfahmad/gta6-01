@@ -1,0 +1,84 @@
+/* Solmar Bay — sun-soaked coastal UI. Warm sand, teal water, coral accents. */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: #0b1c26; overflow: hidden; }
+body { font-family: "Trebuchet MS", "Segoe UI", Verdana, sans-serif; color: #f4efe4; }
+#stage { position: relative; width: 1280px; height: 720px; margin: 0 auto; overflow: hidden;
+  background: linear-gradient(160deg, #0e2a3a 0%, #0b1c26 100%); }
+#game { display: block; width: 1280px; height: 720px; }
+.hidden { display: none !important; }
+
+/* ---------- HUD ---------- */
+#hud { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
+#hud-left { position: absolute; top: 14px; left: 16px; }
+#cash { font-size: 34px; font-weight: 900; color: #7dff9b; letter-spacing: 1px;
+  text-shadow: 0 2px 0 rgba(0,0,0,.55), 0 0 14px rgba(0,0,0,.5); }
+#stars { font-size: 26px; letter-spacing: 3px; margin-top: 2px; min-height: 32px;
+  color: #ffd23e; text-shadow: 0 2px 0 rgba(0,0,0,.6); }
+#stars .off { color: rgba(255,255,255,.22); }
+#objective { margin-top: 8px; max-width: 430px; font-size: 16px; font-weight: 700; line-height: 1.35;
+  background: rgba(8, 24, 34, .72); border-left: 4px solid #ff6b4a; padding: 8px 12px;
+  border-radius: 0 8px 8px 0; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
+#mission-timer { margin-top: 6px; font-size: 15px; font-weight: 700; color: #ffd23e;
+  text-shadow: 0 1px 2px rgba(0,0,0,.7); }
+#hud-right { position: absolute; top: 14px; right: 16px; text-align: right; }
+#minimap { border: 2px solid rgba(255,255,255,.75); border-radius: 8px;
+  background: #123; box-shadow: 0 4px 18px rgba(0,0,0,.55); }
+#minimap-label { font-size: 11px; letter-spacing: 3px; color: rgba(255,255,255,.85);
+  margin-top: 3px; text-shadow: 0 1px 2px rgba(0,0,0,.8); }
+#hud-bottom { position: absolute; right: 22px; bottom: 16px; text-align: right; }
+#speed { font-size: 44px; font-weight: 900; line-height: 1; color: #fff;
+  text-shadow: 0 2px 0 rgba(0,0,0,.6), 0 0 16px rgba(0,0,0,.5); }
+#speed-unit { font-size: 15px; font-weight: 700; color: #ffd23e; margin-left: 6px; }
+#gear { font-size: 15px; font-weight: 800; letter-spacing: 2px; color: #9be7ff; margin-top: 2px;
+  text-shadow: 0 1px 2px rgba(0,0,0,.7); }
+#hint { margin-top: 6px; font-size: 13px; color: rgba(255,255,255,.85);
+  text-shadow: 0 1px 2px rgba(0,0,0,.8); }
+#toast { position: absolute; left: 50%; top: 96px; transform: translateX(-50%);
+  font-size: 22px; font-weight: 900; color: #fff; background: rgba(8,24,34,.8);
+  border: 1px solid rgba(255,255,255,.25); padding: 10px 22px; border-radius: 10px;
+  opacity: 0; transition: opacity .25s; white-space: nowrap; }
+#toast.show { opacity: 1; }
+#beacon-arrow { position: absolute; left: 50%; top: 46%; transform: translate(-50%,-50%);
+  font-size: 30px; color: #ff6b4a; text-shadow: 0 0 10px rgba(255,107,74,.9), 0 2px 2px rgba(0,0,0,.6);
+  display: none; }
+
+/* ---------- Overlays / menus ---------- */
+.overlay { position: absolute; inset: 0; z-index: 10; display: flex; align-items: center;
+  justify-content: center; background: rgba(6, 18, 26, .55); backdrop-filter: blur(2px); }
+.panel { width: 620px; max-width: 92%; background: linear-gradient(165deg, #123243 0%, #0d2230 100%);
+  border: 1px solid rgba(255,255,255,.18); border-radius: 16px; padding: 30px 36px;
+  box-shadow: 0 18px 50px rgba(0,0,0,.6); text-align: center; }
+.panel h2 { font-size: 30px; letter-spacing: 3px; color: #ffd23e; margin-bottom: 14px; }
+.panel p { font-size: 16px; line-height: 1.5; color: #dcebe8; margin-bottom: 12px; }
+.title-panel { width: 680px; background: linear-gradient(165deg, rgba(18,50,67,.96), rgba(13,34,48,.96)); }
+.logo-sub { font-size: 15px; letter-spacing: 8px; color: #9be7ff; font-weight: 700; }
+.logo { font-size: 76px; font-weight: 900; letter-spacing: 2px; line-height: 1.02; color: #fff;
+  text-shadow: 0 4px 0 #ff6b4a, 0 8px 24px rgba(0,0,0,.6); margin: 6px 0 10px; }
+.logo span { color: #ffd23e; text-shadow: 0 4px 0 #0e7d8c, 0 8px 24px rgba(0,0,0,.6); }
+.tagline { font-size: 17px; color: #bfe3dd; }
+.menu { display: flex; flex-direction: column; gap: 10px; margin: 20px auto 16px; width: 320px; }
+.menu-btn { pointer-events: auto; cursor: pointer; font-family: inherit; font-size: 17px;
+  font-weight: 800; letter-spacing: 2px; color: #0b1c26; background: #f4efe4; border: none;
+  border-radius: 10px; padding: 12px 18px; transition: transform .08s, background .15s; }
+.menu-btn:hover { background: #ffd23e; transform: translateY(-1px); }
+.menu-btn.primary { background: #ff6b4a; color: #fff; }
+.menu-btn.primary:hover { background: #ff8266; }
+.menu-btn:disabled { opacity: .45; cursor: default; transform: none; }
+.foot { font-size: 13px; color: rgba(220,235,232,.75); line-height: 1.5; }
+.brief-no { font-size: 14px; letter-spacing: 4px; color: #9be7ff; font-weight: 800; }
+#brief-title, #result-title { margin: 8px 0 10px; }
+.pay { font-size: 18px; font-weight: 900; color: #7dff9b; }
+.keys { text-align: left; margin: 0 auto 14px; width: 440px; font-size: 15px; }
+.keys div { display: flex; gap: 14px; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,.08); }
+.keys dt { width: 130px; font-weight: 800; color: #ffd23e; }
+.keys dd { color: #dcebe8; }
+.rules { font-size: 14px; }
+#mission-list { text-align: left; margin-bottom: 16px; }
+.mission-row { display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding: 10px 12px; border: 1px solid rgba(255,255,255,.12); border-radius: 8px; margin-bottom: 8px;
+  background: rgba(255,255,255,.04); }
+.mission-row .m-name { font-weight: 800; font-size: 15px; }
+.mission-row .m-pay { color: #7dff9b; font-weight: 800; white-space: nowrap; }
+.mission-row .m-state { font-size: 12px; letter-spacing: 1px; color: #9be7ff; }
+.mission-row button { flex-shrink: 0; padding: 7px 14px; font-size: 13px; }
+.busted-panel h2 { color: #ff5a4a; font-size: 44px; }
